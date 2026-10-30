@@ -1,73 +1,58 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Medium Clone API (NestJS)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+The backend for [mediumclone-ngrx](https://github.com/serj7220/mediumclone-ngrx). A REST API for a Medium style blog that follows the [RealWorld](https://github.com/gothinkster/realworld) spec: users, articles, feeds, tags, favorites and follows.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+This is a learning project from the same course. As a frontend developer I built it to understand the server side of the app I was working on: how the API, authentication and database fit together.
 
-## Description
+## Features
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Sign up and sign in with JWT; read and update the current user
+- Articles: create, read, update, delete; the slug is made from the title plus a short random suffix
+- Global list of articles with filters by tag, author and favorited user, a personal feed from followed users, and pagination
+- Favorite and unfavorite articles
+- User profiles, follow and unfollow
+- Tags
 
-## Installation
+## API
 
-```bash
-$ npm install
-```
+| Method | Path | Auth |
+|---|---|---|
+| POST | `/users` | |
+| POST | `/users/login` | |
+| GET, PUT | `/user` | yes |
+| GET | `/articles` | optional |
+| GET | `/articles/feed` | yes |
+| POST | `/articles` | yes |
+| GET | `/articles/:slug` | |
+| PUT, DELETE | `/articles/:slug` | yes |
+| POST, DELETE | `/articles/:slug/favorite` | yes |
+| GET | `/profiles/:username` | optional |
+| POST, DELETE | `/profiles/:username/follow` | yes |
+| GET | `/tags` | |
 
-## Running the app
+## How it is built
 
-```bash
-# development
-$ npm run start
+- **One module per domain:** `user`, `article`, `profile`, `tag`. Each has its controller, service, entity and response types.
+- **Authentication:** a middleware reads the JWT from the request and loads the user. A guard protects private routes, and a custom `@User()` decorator gives the controller the current user. Passwords are hashed with bcrypt.
+- **Validation:** DTOs with `class-validator` and a custom pipe that returns errors in the format the frontend expects.
+- **Database:** PostgreSQL with TypeORM. The schema is built only with migrations (`synchronize` is off), and a seed migration adds test data.
 
-# watch mode
-$ npm run start:dev
+## Run locally
 
-# production mode
-$ npm run start:prod
-```
-
-## Test
+You need Node.js and PostgreSQL. Create a database and user that match `src/ormconfig.ts`, then:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm install
+npm run db:migrate   # create tables
+npm run db:seed      # optional: add test data
+npm start            # API on http://localhost:3000
 ```
 
-## Support
+## Known limitations
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+- The database settings and the JWT secret are written in the code for local use. A real deployment should read them from environment variables.
+- There are no tests beyond the default ones from Nest CLI.
 
-## Stay in touch
+## Stack
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+NestJS 9, TypeScript, TypeORM 0.3, PostgreSQL, JWT, bcrypt, class-validator.
